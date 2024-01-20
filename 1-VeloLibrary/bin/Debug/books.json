@@ -1,0 +1,26 @@
+[
+  {
+    "BookId": 0,
+    "Title": "Dummy_Book",
+    "Author": "Dummy_Author",
+    "ISBN": "000-0000000000",
+    "StockAmount": 11,
+    "LentAmount": 0
+  },
+  {
+    "BookId": 1,
+    "Title": "Dummy_Book1",
+    "Author": "Dummy_Author1",
+    "ISBN": "000-0000000001",
+    "StockAmount": 2,
+    "LentAmount": 0
+  },
+  {
+    "BookId": 2,
+    "Title": "Bu bir yeni kitaptır",
+    "Author": "Hasan Yılmaz",
+    "ISBN": "123-0987654321",
+    "StockAmount": 5,
+    "LentAmount": 0
+  }
+]
