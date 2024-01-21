@@ -1,6 +1,6 @@
 [
   {
-    "BookId": 0,
+    "BookNo": 0,
     "Title": "Dummy_Book",
     "Author": "Dummy_Author",
     "ISBN": "000-0000000000",
@@ -8,15 +8,15 @@
     "LentAmount": 0
   },
   {
-    "BookId": 1,
+    "BookNo": 1,
     "Title": "Dummy_Book1",
     "Author": "Dummy_Author1",
     "ISBN": "000-0000000001",
-    "StockAmount": 2,
+    "StockAmount": 3,
     "LentAmount": 0
   },
   {
-    "BookId": 2,
+    "BookNo": 2,
     "Title": "Bu bir yeni kitaptır",
     "Author": "Hasan Yılmaz",
     "ISBN": "123-0987654321",

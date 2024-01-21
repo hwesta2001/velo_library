@@ -8,3 +8,13 @@ C:\0PC\Unity\Projects\velo_library\1-VeloLibrary\obj\Debug\1-VeloLibrary.csproj.
 C:\0PC\Unity\Projects\velo_library\1-VeloLibrary\obj\Debug\1-VeloLibrary.csproj.CopyComplete
 C:\0PC\Unity\Projects\velo_library\1-VeloLibrary\obj\Debug\1-VeloLibrary.exe
 C:\0PC\Unity\Projects\velo_library\1-VeloLibrary\obj\Debug\1-VeloLibrary.pdb
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\bin\Debug\1-VeloLibrary.exe.config
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\bin\Debug\1-VeloLibrary.exe
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\bin\Debug\1-VeloLibrary.pdb
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\bin\Debug\Newtonsoft.Json.dll
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\bin\Debug\Newtonsoft.Json.xml
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\obj\Debug\1-VeloLibrary.csproj.AssemblyReference.cache
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\obj\Debug\1-VeloLibrary.csproj.CoreCompileInputs.cache
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\obj\Debug\1-VeloLibrary.csproj.CopyComplete
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\obj\Debug\1-VeloLibrary.exe
+E:\VeloStaj\1_Velo_Library\1-VeloLibrary\obj\Debug\1-VeloLibrary.pdb

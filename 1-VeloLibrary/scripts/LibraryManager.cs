@@ -32,10 +32,10 @@ namespace VeloLibrary
 
         public void ShowBookList()
         {
-            Console.WriteLine("Book List:");
+            Console.WriteLine("\tBook List:");
             foreach (var book in books)
             {
-                Console.WriteLine($"BookId: {book.BookId}, Title: {book.Title}, Author: {book.Author}, ISBN: {book.ISBN}, StockAmount: {book.StockAmount}, LentAmount: {book.LentAmount}");
+                Console.WriteLine($"{book.BookNo} - {book.Title} | Author:{book.Author} | ISBN:{book.ISBN} | StockAmount:{book.StockAmount} | LentAmount:{book.LentAmount}");
             }
         }
 
@@ -74,7 +74,7 @@ namespace VeloLibrary
         {
             Book dummyBook0 = new Book
             {
-                BookId = 10,
+                BookNo = 10,
                 Title = "Dummy_Book",
                 Author = "Dummy_Author",
                 ISBN = "000-0000000000",
@@ -84,7 +84,7 @@ namespace VeloLibrary
 
             Book dummyBook01 = new Book
             {
-                BookId = 11,
+                BookNo = 11,
                 Title = "Dummy_Book1",
                 Author = "Dummy_Author1",
                 ISBN = "000-0000000001",
@@ -115,18 +115,28 @@ namespace VeloLibrary
             RefreshBooksJson();
         }
 
-        public void RemoveBookToLibrary(Book book)
+        public void RemoveBookFromLibrary(Book book)
         {
             if (books.Contains(book))
             {
                 book.StockAmount--;
-                if (book.StockAmount <= 0)
-                {
-                    books.Remove(book);
-                    Console.WriteLine(book.Title + " removed from library.");
-                }
+                if (book.StockAmount < 0) book.StockAmount = 0;
             }
             RefreshBooksJson();
+        }
+
+        public void BorrowABook(Book book)
+        {
+            if (book.StockAmount > 0)
+            {
+                book.LentAmount++;
+                Console.WriteLine(book.Title + " - book was lent");
+                RemoveBookFromLibrary(book);
+            }
+            else
+            {
+                Console.WriteLine(book.Title + " - book is out of library stocks");
+            }
         }
 
         public void RefreshBooksJson()
@@ -134,7 +144,7 @@ namespace VeloLibrary
             foreach (Book book in books)
             {
                 //bookid leri indexlere eşleyerek id ile kitap çağrmayı kolaylaştırabiliriz.
-                book.BookId = books.IndexOf(book);
+                book.BookNo = books.IndexOf(book);
             }
             File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(books, Formatting.Indented));
         }

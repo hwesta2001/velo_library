@@ -21,14 +21,18 @@ namespace VeloLibrary
         private static void Operations()
         {
             Console.WriteLine("\nChoose an option from the following list:");
-            Console.WriteLine("\ts - Show book list.");
-            Console.WriteLine("\ta - Add a book to library");
-            Console.WriteLine("\trm - Remove book from library");
+            Console.WriteLine("\ts - Show books list."); //done
+            Console.WriteLine("\ta - Add a book to library"); //done
+            Console.WriteLine("\tr - Remove a book from library");
+            Console.WriteLine("\td - Delete book from library list");
             Console.WriteLine("\tf - Find a book in library");
-            Console.WriteLine("\tl - Lend a book from library");
-            Console.WriteLine("\trt - Return a book to library");
-            Console.WriteLine("\tc - Clear \tx - Exit");
+            Console.WriteLine("\tb - Borrow a book from library");
+            Console.WriteLine("\tt - Return a book to library");
+            Console.WriteLine("\tc - Clear");
+            Console.WriteLine("\tx - Exit");
+
             Console.WriteLine("What do you want to do? ");
+
             switch (Console.ReadLine())
             {
                 case "x":
@@ -62,7 +66,7 @@ namespace VeloLibrary
                     Operations();
                     break;
                 default:
-                    Console.WriteLine("Would you like to continue the operation? (y)es");
+                    Console.WriteLine("Would you like to continue the operation? (y)es?");
                     if (Console.ReadLine() == "y" || Console.ReadLine() == "yes")
                     {
                         Operations();
@@ -83,7 +87,7 @@ namespace VeloLibrary
             if (libraryManager.AddExistingBook(id))
             {
                 Console.WriteLine("\nOne more '" + libraryManager.GetBookWithId(id).Title + "' added.");
-                Console.WriteLine("Press a key to continue.");
+                Console.WriteLine("Press a key to continue...");
                 Console.ReadKey();
             }
             else
