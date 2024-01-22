@@ -10,8 +10,8 @@ namespace VeloLibrary
 {
     internal class LibraryManager
     {
-        private readonly string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
-        private List<Book> books = new List<Book>();
+        readonly string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
+        List<Book> books = new List<Book>();
 
         public void CreateLibrary()
         {
@@ -19,21 +19,22 @@ namespace VeloLibrary
             {
                 books.Clear();
                 books = ReadJsonToList(jsonFilePath);
-                //Console.WriteLine("Existing Library Loaded.");
+                //Console.WriteLine("Existing Library Loaded."); //for debuging
             }
             else
             {
                 InitJsonFile();
-                //Console.WriteLine("New Library Created.");
+                //Console.WriteLine("New Library Created."); //for debuging
             }
-            //ShowBookList();
+            Operations();
         }
 
-        private void InitJsonFile()
+        #region JSON Methods
+        void InitJsonFile()
         {
             Book dummyBook0 = new Book
             {
-                BookNo = 10,
+                BookNo = 0,
                 Title = "Dummy_Book",
                 Author = "Dummy_Author",
                 ISBN = "000-0000000000",
@@ -43,7 +44,7 @@ namespace VeloLibrary
 
             Book dummyBook01 = new Book
             {
-                BookNo = 11,
+                BookNo = 1,
                 Title = "Dummy_Book1",
                 Author = "Dummy_Author1",
                 ISBN = "000-0000000001",
@@ -60,99 +61,7 @@ namespace VeloLibrary
             AddBookToLibrary(dummyBook01);
         }
 
-        public void ShowBookList()
-        {
-            Console.BackgroundColor = ConsoleColor.Yellow;
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("\n  Book List:                              ");
-            Console.ResetColor();
-            foreach (var book in books)
-            {
-                Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  StockAmount: {book.StockAmount}  |  LentAmount: {book.LentAmount}");
-            }
-        }
-
-        public void CreateAndAddBookToLibrary()
-        {
-            Book book = new Book();
-            Console.WriteLine("Book Title: ");
-            book.Title = Console.ReadLine();
-            Console.WriteLine("Book Author: ");
-            book.Author = Console.ReadLine();
-            Console.WriteLine("Book ISBN: ");
-            book.ISBN = Console.ReadLine();
-            Console.WriteLine("How many copy do you add? ");
-            try
-            {
-                int stockSize = Convert.ToInt32(Console.ReadLine());
-                Console.WriteLine("Book added");
-                AddBookToLibrary(book, stockSize);
-            }
-            catch
-            {
-                Console.WriteLine("It is not a valid entry, please try again.");
-                Console.ReadKey();
-                CreateAndAddBookToLibrary();
-            }
-        }
-
-        public Book GetBookWithId(int id)
-        {
-            return books[id];
-        }
-
-        public bool AddExistingBook(int id)
-        {
-            if (id < 0 || id >= books.Count)
-            {
-                return false;
-            }
-            else
-            {
-                AddBookToLibrary(books[id]);
-                return true;
-            }
-        }
-
-        public void AddBookToLibrary(Book book, int? stockSize = null)
-        {
-            if (books.Contains(book))
-            {
-                book.StockAmount++;
-            }
-            else
-            {
-                book.StockAmount = stockSize ?? 1;
-                books.Add(book);
-            }
-            RefreshBooksJson();
-        }
-
-        public void RemoveBookFromLibrary(Book book)
-        {
-            if (books.Contains(book))
-            {
-                book.StockAmount--;
-                if (book.StockAmount < 0) book.StockAmount = 0;
-            }
-            RefreshBooksJson();
-        }
-
-        public void BorrowABookWithId(int id)
-        {
-            if (books[id].StockAmount > 0)
-            {
-                books[id].LentAmount++;
-                Console.WriteLine(books[id].Title + " - book was lent");
-                RemoveBookFromLibrary(books[id]);
-            }
-            else
-            {
-                Console.WriteLine(books[id].Title + " - book is out of library stocks");
-            }
-        }
-
-        public void RefreshBooksJson()
+        void RefreshBooksJson()
         {
             foreach (Book book in books)
             {
@@ -166,5 +75,247 @@ namespace VeloLibrary
         {
             return JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(filePath));
         }
+        #endregion
+
+        void Operations()
+        {
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("\nChoose an option from the following list;");
+            Console.ResetColor();
+
+            Console.WriteLine(" s - Show books list."); //done
+            Console.WriteLine(" a - Add a book to library"); //done
+            Console.WriteLine(" r - Remove a book from library");
+            Console.WriteLine(" d - Delete book from library list");
+            Console.WriteLine(" f - Find a book in library");
+            Console.WriteLine(" b - Borrow a book from library");
+            Console.WriteLine(" t - Return a book to library");
+            Console.WriteLine(" c - Clear");
+            Console.WriteLine(" x - Exit");
+
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("What do you want to do?                   ");
+            Console.ResetColor();
+
+            switch (Console.ReadLine())
+            {
+
+                case "s":
+                    ShowBookList();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "a":
+                    AddBook();
+                    break;
+
+                case "c":
+                    Console.Clear();
+                    Operations();
+                    break;
+
+                case "x":
+                    Environment.Exit(0);
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid entry                        ");
+                    Console.WriteLine("Would you like to continue? (y)es?   ");
+                    string line = Console.ReadLine();
+                    if (line == "y" || line == "yes")
+                    {
+                        Operations();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Closing Library. See You Again!   ");
+                        Environment.Exit(0);
+                    }
+                    break;
+            }
+        }
+
+
+
+        void PressToContinue()
+        {
+            Console.BackgroundColor = ConsoleColor.Black;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Press any key to continue...              ");
+            Console.ResetColor();
+            Console.ReadKey();
+        }
+
+        void ShowBookList()
+        {
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("\n  Book List:                              ");
+            Console.ResetColor();
+            foreach (var book in books)
+            {
+                Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  StockAmount: {book.StockAmount}  |  LentAmount: {book.LentAmount}");
+            }
+        }
+
+
+        private void AddBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' for add an existing book. ");
+            Console.WriteLine("Enter    (a)    for add a  new book.      ");
+            Console.ResetColor();
+            string addLine = Console.ReadLine();
+
+            if (addLine == "a")
+            {
+                CreateAndAddBookToLibrary();
+            }
+            else
+            {
+                try
+                {
+                    int id = Convert.ToInt32(addLine);
+                    if (AddExistingBook(id))
+                    {
+                        PressToContinue();
+                    }
+                    else
+                    {
+                        AddError();
+                    }
+                }
+                catch
+                {
+                    AddError();
+                }
+            }
+            Operations();
+        }
+
+        void CreateAndAddBookToLibrary()
+        {
+            Book book = new Book();
+            string readedLine = "";
+
+            Console.WriteLine("Book Title: ");
+            readedLine = Console.ReadLine();
+            if (readedLine == "") CreateError();
+            else book.Title = readedLine;
+
+            Console.WriteLine("Book Author: ");
+            readedLine = Console.ReadLine();
+            if (readedLine == "") CreateError();
+            else book.Author = readedLine;
+
+            Console.WriteLine("Book ISBN: ");
+            readedLine = Console.ReadLine();
+            if (readedLine == "") CreateError();
+            else book.ISBN = readedLine;
+
+            Console.WriteLine("How many copy do you add? ");
+            try
+            {
+                int stockSize = Convert.ToInt32(Console.ReadLine());
+                AddBookToLibrary(book, stockSize);
+                PressToContinue();
+            }
+            catch
+            {
+                CreateError();
+            }
+        }
+
+        void CreateError()
+        {
+            Console.WriteLine("It is not a valid entry! \nWant to try again. (y)es?");
+            string line = Console.ReadLine();
+            if (line == "y" || line == "yes")
+            {
+                Console.WriteLine("\n");
+                CreateAndAddBookToLibrary();
+            }
+            else
+            {
+                Operations();
+            }
+        }
+
+        void AddError()
+        {
+            Console.WriteLine("Invalid entry! \nWant to try again? (y)es?");
+            string line = Console.ReadLine();
+            if (line == "y" || line == "yes")
+            {
+                Console.WriteLine("\n");
+                ShowBookList();
+                AddBook();
+            }
+            else
+            {
+                Operations();
+            }
+        }
+
+        bool AddExistingBook(int id)
+        {
+            if (id >= 0 && id < books.Count)
+            {
+                AddBookToLibrary(books[id]);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        void AddBookToLibrary(Book book, int? stockSize = null)
+        {
+            if (books.Contains(book))
+            {
+                book.StockAmount++;
+            }
+            else
+            {
+                book.StockAmount = stockSize ?? 1;
+                books.Add(book);
+            }
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("\n" + (stockSize ?? 1) + " books titled '" + book.Title + "' has been added.");
+            Console.ResetColor();
+            RefreshBooksJson();
+        }
+
+        void RemoveBookFromLibrary(Book book)
+        {
+            if (books.Contains(book))
+            {
+                book.StockAmount--;
+                if (book.StockAmount < 0) book.StockAmount = 0;
+            }
+            RefreshBooksJson();
+        }
+
+        void BorrowABookWithId(int id)
+        {
+            if (books[id].StockAmount > 0)
+            {
+                books[id].LentAmount++;
+                Console.WriteLine(books[id].Title + " - book was lent");
+                RemoveBookFromLibrary(books[id]);
+            }
+            else
+            {
+                Console.WriteLine(books[id].Title + " - book is out of library stocks");
+            }
+        }
+
     }
 }
