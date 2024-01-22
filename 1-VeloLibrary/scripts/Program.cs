@@ -51,18 +51,13 @@ namespace VeloLibrary
 
             switch (Console.ReadLine())
             {
-                case "x":
-                    Environment.Exit(0);
-                    break;
-                case "c":
-                    Console.Clear();
-                    Operations();
-                    break;
+
                 case "s":
                     libraryManager.ShowBookList();
                     PressToContinue();
                     Operations();
                     break;
+					
                 case "a":
                     libraryManager.ShowBookList();
                     Console.WriteLine("Add an existing book? (y)es or (n)no?");
@@ -82,6 +77,16 @@ namespace VeloLibrary
                     }
                     Operations();
                     break;
+					
+				case "c":
+                    Console.Clear();
+                    Operations();
+                    break;
+					
+                case "x":
+                    Environment.Exit(0);
+                    break;
+					
                 default:
                     Console.WriteLine("Would you like to continue the operation? (y)es?");
                     if (Console.ReadLine() == "y" || Console.ReadLine() == "yes")
