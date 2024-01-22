@@ -10,8 +10,8 @@ namespace VeloLibrary
 {
     internal class LibraryManager
     {
-        public string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
-        public List<Book> books = new List<Book>();
+        private readonly string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
+        private List<Book> books = new List<Book>();
 
         public void CreateLibrary()
         {
@@ -19,55 +19,14 @@ namespace VeloLibrary
             {
                 books.Clear();
                 books = ReadJsonToList(jsonFilePath);
-                Console.WriteLine("Existing Library Loaded.");
+                //Console.WriteLine("Existing Library Loaded.");
             }
             else
             {
                 InitJsonFile();
-                Console.WriteLine("New Library Created.");
+                //Console.WriteLine("New Library Created.");
             }
-
-            ShowBookList();
-        }
-
-        public void ShowBookList()
-        {
-            Console.WriteLine("\tBook List:");
-            foreach (var book in books)
-            {
-                Console.WriteLine($"{book.BookNo} - {book.Title} | Author:{book.Author} | ISBN:{book.ISBN} | StockAmount:{book.StockAmount} | LentAmount:{book.LentAmount}");
-            }
-        }
-
-        public void CreateAndAddBookToLibrary()
-        {
-            Book book = new Book();
-            Console.WriteLine("Book Title: ");
-            book.Title = Console.ReadLine();
-            Console.WriteLine("Book Author: ");
-            book.Author = Console.ReadLine();
-            Console.WriteLine("Book ISBN: ");
-            book.ISBN = Console.ReadLine();
-            Console.WriteLine("Book added");
-            AddBookToLibrary(book);
-        }
-
-        public bool AddExistingBook(int id)
-        {
-            if (id < 0 || id >= books.Count)
-            {
-                return false;
-            }
-            else
-            {
-                AddBookToLibrary(GetBookWithId(id));
-                return true;
-            }
-        }
-
-        public Book GetBookWithId(int id)
-        {
-            return books[id];
+            //ShowBookList();
         }
 
         private void InitJsonFile()
@@ -101,7 +60,63 @@ namespace VeloLibrary
             AddBookToLibrary(dummyBook01);
         }
 
-        public void AddBookToLibrary(Book book)
+
+
+        public void ShowBookList()
+        {
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("\n Book List:                               ");
+            Console.ResetColor();
+            foreach (var book in books)
+            {
+                Console.WriteLine($"  {book.BookNo} - {book.Title} | Author:{book.Author} | ISBN:{book.ISBN} | StockAmount:{book.StockAmount} | LentAmount:{book.LentAmount}");
+            }
+        }
+
+        public void CreateAndAddBookToLibrary()
+        {
+            Book book = new Book();
+            Console.WriteLine("Book Title: ");
+            book.Title = Console.ReadLine();
+            Console.WriteLine("Book Author: ");
+            book.Author = Console.ReadLine();
+            Console.WriteLine("Book ISBN: ");
+            book.ISBN = Console.ReadLine();
+            Console.WriteLine("Howmany book want to add? ");
+            try
+            {
+                int stockSize = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("Book added");
+                AddBookToLibrary(book, stockSize);
+            }
+            catch
+            {
+                Console.WriteLine("It is not a valid entry, please try again.");
+                Console.ReadKey();
+                CreateAndAddBookToLibrary();
+            }
+        }
+
+        public Book GetBookWithId(int id)
+        {
+            return books[id];
+        }
+
+        public bool AddExistingBook(int id)
+        {
+            if (id < 0 || id >= books.Count)
+            {
+                return false;
+            }
+            else
+            {
+                AddBookToLibrary(books[id]);
+                return true;
+            }
+        }
+
+        public void AddBookToLibrary(Book book, int? stockSize = null)
         {
             if (books.Contains(book))
             {
@@ -109,7 +124,7 @@ namespace VeloLibrary
             }
             else
             {
-                book.StockAmount = 1;
+                book.StockAmount = stockSize ?? 1;
                 books.Add(book);
             }
             RefreshBooksJson();
@@ -125,17 +140,17 @@ namespace VeloLibrary
             RefreshBooksJson();
         }
 
-        public void BorrowABook(Book book)
+        public void BorrowABookWithId(int id)
         {
-            if (book.StockAmount > 0)
+            if (books[id].StockAmount > 0)
             {
-                book.LentAmount++;
-                Console.WriteLine(book.Title + " - book was lent");
-                RemoveBookFromLibrary(book);
+                books[id].LentAmount++;
+                Console.WriteLine(books[id].Title + " - book was lent");
+                RemoveBookFromLibrary(books[id]);
             }
             else
             {
-                Console.WriteLine(book.Title + " - book is out of library stocks");
+                Console.WriteLine(books[id].Title + " - book is out of library stocks");
             }
         }
 

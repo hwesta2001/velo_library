@@ -20,7 +20,15 @@
     "Title": "Bu bir yeni kitaptır",
     "Author": "Hasan Yılmaz",
     "ISBN": "123-0987654321",
-    "StockAmount": 5,
+    "StockAmount": 6,
+    "LentAmount": 0
+  },
+  {
+    "BookNo": 3,
+    "Title": "Dördüncü Kitap",
+    "Author": "Hasan Yılmaz",
+    "ISBN": "098-9876567899",
+    "StockAmount": 4,
     "LentAmount": 0
   }
 ]

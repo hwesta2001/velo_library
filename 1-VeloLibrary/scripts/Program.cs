@@ -13,25 +13,41 @@ namespace VeloLibrary
         {
             libraryManager = new LibraryManager();
             libraryManager.CreateLibrary();
-            Console.WriteLine("\nWelcome to Velo Library");
-
+            WelcomeSheet();
             Operations();
+        }
+
+        private static void WelcomeSheet()
+        {
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("*****************************************");
+            Console.WriteLine("*******  Welcome to Velo Library  *******");
+            Console.WriteLine("*****************************************");
+            Console.ResetColor();
         }
 
         private static void Operations()
         {
-            Console.WriteLine("\nChoose an option from the following list:");
-            Console.WriteLine("\ts - Show books list."); //done
-            Console.WriteLine("\ta - Add a book to library"); //done
-            Console.WriteLine("\tr - Remove a book from library");
-            Console.WriteLine("\td - Delete book from library list");
-            Console.WriteLine("\tf - Find a book in library");
-            Console.WriteLine("\tb - Borrow a book from library");
-            Console.WriteLine("\tt - Return a book to library");
-            Console.WriteLine("\tc - Clear");
-            Console.WriteLine("\tx - Exit");
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("\nChoose an option from the following list;");
+            Console.ResetColor();
 
-            Console.WriteLine("What do you want to do? ");
+            Console.WriteLine(" s - Show books list."); //done
+            Console.WriteLine(" a - Add a book to library"); //done
+            Console.WriteLine(" r - Remove a book from library");
+            Console.WriteLine(" d - Delete book from library list");
+            Console.WriteLine(" f - Find a book in library");
+            Console.WriteLine(" b - Borrow a book from library");
+            Console.WriteLine(" t - Return a book to library");
+            Console.WriteLine(" c - Clear");
+            Console.WriteLine(" x - Exit");
+
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("What do you want to do?                   ");
+            Console.ResetColor();
 
             switch (Console.ReadLine())
             {
@@ -44,6 +60,7 @@ namespace VeloLibrary
                     break;
                 case "s":
                     libraryManager.ShowBookList();
+                    PressToContinue();
                     Operations();
                     break;
                 case "a":
@@ -83,14 +100,30 @@ namespace VeloLibrary
         private static void TryAddExistingBook()
         {
             Console.WriteLine("Write BookId you want to add ");
-            int id = Convert.ToInt32(Console.ReadLine());
-            if (libraryManager.AddExistingBook(id))
+
+            try
             {
-                Console.WriteLine("\nOne more '" + libraryManager.GetBookWithId(id).Title + "' added.");
-                Console.WriteLine("Press a key to continue...");
-                Console.ReadKey();
+                int id = Convert.ToInt32(Console.ReadLine());
+                if (libraryManager.AddExistingBook(id))
+                {
+                    Console.WriteLine("\nOne more '" + libraryManager.GetBookWithId(id).Title + "' added.");
+                    PressToContinue();
+                }
+                else
+                {
+                    Console.WriteLine("Invalid book id. Do you want to try again? (y)es?");
+                    if (Console.ReadLine() == "y" || Console.ReadLine() == "yes")
+                    {
+                        libraryManager.ShowBookList();
+                        TryAddExistingBook();
+                    }
+                    else
+                    {
+                        Operations();
+                    }
+                }
             }
-            else
+            catch
             {
                 Console.WriteLine("Invalid book id. Do you want to try again? (y)es?");
                 if (Console.ReadLine() == "y" || Console.ReadLine() == "yes")
@@ -103,6 +136,17 @@ namespace VeloLibrary
                     Operations();
                 }
             }
+
+        }
+
+        private static void PressToContinue()
+        {
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Press any key to continue...              ");
+            Console.ResetColor();
+            Console.ReadKey();
+
         }
     }
 }
