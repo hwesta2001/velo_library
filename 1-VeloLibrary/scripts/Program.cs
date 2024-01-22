@@ -57,7 +57,7 @@ namespace VeloLibrary
                     PressToContinue();
                     Operations();
                     break;
-					
+
                 case "a":
                     libraryManager.ShowBookList();
                     Console.WriteLine("Add an existing book? (y)es or (n)no?");
@@ -77,24 +77,26 @@ namespace VeloLibrary
                     }
                     Operations();
                     break;
-					
-				case "c":
+
+                case "c":
                     Console.Clear();
                     Operations();
                     break;
-					
+
                 case "x":
                     Environment.Exit(0);
                     break;
-					
+
                 default:
-                    Console.WriteLine("Would you like to continue the operation? (y)es?");
+                    Console.WriteLine("Invalid entry                        ");
+                    Console.WriteLine("Would you like to continue? (y)es?   ");
                     if (Console.ReadLine() == "y" || Console.ReadLine() == "yes")
                     {
                         Operations();
                     }
                     else
                     {
+                        Console.WriteLine("Closing Library. See You Again!   ");
                         Environment.Exit(0);
                     }
                     break;
@@ -104,14 +106,14 @@ namespace VeloLibrary
 
         private static void TryAddExistingBook()
         {
-            Console.WriteLine("Write BookId you want to add ");
+            Console.WriteLine("Write Book Number you want to add ");
 
             try
             {
                 int id = Convert.ToInt32(Console.ReadLine());
                 if (libraryManager.AddExistingBook(id))
                 {
-                    Console.WriteLine("\nOne more '" + libraryManager.GetBookWithId(id).Title + "' added.");
+                    Console.WriteLine("\n,'" + libraryManager.GetBookWithId(id).Title + "' added.");
                     PressToContinue();
                 }
                 else
