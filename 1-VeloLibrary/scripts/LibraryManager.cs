@@ -60,17 +60,15 @@ namespace VeloLibrary
             AddBookToLibrary(dummyBook01);
         }
 
-
-
         public void ShowBookList()
         {
             Console.BackgroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("\n Book List:                               ");
+            Console.WriteLine("\n  Book List:                              ");
             Console.ResetColor();
             foreach (var book in books)
             {
-                Console.WriteLine($"  {book.BookNo} - {book.Title} | Author:{book.Author} | ISBN:{book.ISBN} | StockAmount:{book.StockAmount} | LentAmount:{book.LentAmount}");
+                Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  StockAmount: {book.StockAmount}  |  LentAmount: {book.LentAmount}");
             }
         }
 
@@ -83,7 +81,7 @@ namespace VeloLibrary
             book.Author = Console.ReadLine();
             Console.WriteLine("Book ISBN: ");
             book.ISBN = Console.ReadLine();
-            Console.WriteLine("Howmany book want to add? ");
+            Console.WriteLine("How many copy do you add? ");
             try
             {
                 int stockSize = Convert.ToInt32(Console.ReadLine());
@@ -168,7 +166,5 @@ namespace VeloLibrary
         {
             return JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(filePath));
         }
-
-
     }
 }

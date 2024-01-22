@@ -9,11 +9,11 @@ namespace VeloLibrary
 {
     internal class Book
     {
-        public int BookNo {  get; set; }
-        public string Title { get; set; }
-        public string Author { get; set; }
-        public string ISBN { get; set; }
-        public int StockAmount { get; set; }
-        public uint LentAmount { get; set; }
+        public int BookNo;
+        public string Title;
+        public string Author;
+        public string ISBN;
+        public int StockAmount;
+        public uint LentAmount;
     }
 }
