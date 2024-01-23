@@ -81,7 +81,7 @@ namespace VeloLibrary
         {
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("\nChoose an option from the following list;");
+            Console.WriteLine("\n*******        OPERATIONS           ******");
             Console.ResetColor();
 
             Console.WriteLine(" s - Show books list."); //done
@@ -125,7 +125,7 @@ namespace VeloLibrary
                     Console.WriteLine("Invalid entry                        ");
                     Console.WriteLine("Would you like to continue? (y)es?   ");
                     string line = Console.ReadLine();
-                    if (line == "y" || line == "yes")
+                    if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
                     {
                         Operations();
                     }
@@ -165,7 +165,7 @@ namespace VeloLibrary
         private void AddBook()
         {
             ShowBookList();
-            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
             Console.WriteLine("Enter 'Book No' for add an existing book. ");
             Console.WriteLine("Enter    (a)    for add a  new book.      ");
@@ -266,8 +266,18 @@ namespace VeloLibrary
         {
             if (id >= 0 && id < books.Count)
             {
-                AddBookToLibrary(books[id]);
-                return true;
+                Console.WriteLine("How many books want you add?");
+                string line = Console.ReadLine();
+                try
+                {
+                    int stokSize = Convert.ToInt32(line);
+                    AddBookToLibrary(books[id], stokSize);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
             else
             {
@@ -279,7 +289,7 @@ namespace VeloLibrary
         {
             if (books.Contains(book))
             {
-                book.StockAmount++;
+                book.StockAmount += stockSize ?? 1;
             }
             else
             {

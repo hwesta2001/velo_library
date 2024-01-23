@@ -12,7 +12,7 @@
     "Title": "Dummy_Book1",
     "Author": "Dummy_Author1",
     "ISBN": "000-0000000001",
-    "StockAmount": 3,
+    "StockAmount": 4,
     "LentAmount": 0
   },
   {
@@ -20,7 +20,7 @@
     "Title": "New Book",
     "Author": "Hasan Yılmaz",
     "ISBN": "123-0009998887776",
-    "StockAmount": 8,
+    "StockAmount": 10,
     "LentAmount": 0
   },
   {

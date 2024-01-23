@@ -20,10 +20,10 @@ namespace VeloLibrary
         {
             Console.BackgroundColor = ConsoleColor.DarkCyan;
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("*****************************************");
-            Console.WriteLine("*******  Welcome to Velo Library  *******");
-            Console.WriteLine("*******   Made by Hasan YILMAZ    *******");
-            Console.WriteLine("*****************************************");
+            Console.WriteLine("******************************************");
+            Console.WriteLine("*******  Welcome to Velo Library   *******");
+            Console.WriteLine("*******    Made by Hasan YILMAZ    *******");
+            Console.WriteLine("******************************************");
             Console.ResetColor();
         }
 
