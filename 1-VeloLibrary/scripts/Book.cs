@@ -14,6 +14,7 @@ namespace VeloLibrary
         public string Author;
         public string ISBN;
         public int StockAmount;
-        public uint LentAmount;
+        public int LentAmount;
+        public int TotalAmount;
     }
 }

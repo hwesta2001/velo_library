@@ -5,30 +5,34 @@
     "Author": "Dummy_Author",
     "ISBN": "000-0000000000",
     "StockAmount": 10,
-    "LentAmount": 0
+    "LentAmount": 0,
+    "TotalAmount": 10
   },
   {
     "BookNo": 1,
-    "Title": "Dummy_Book1",
-    "Author": "Dummy_Author1",
-    "ISBN": "000-0000000001",
-    "StockAmount": 4,
-    "LentAmount": 0
-  },
-  {
-    "BookNo": 2,
     "Title": "New Book",
     "Author": "Hasan Yılmaz",
     "ISBN": "123-0009998887776",
-    "StockAmount": 10,
-    "LentAmount": 0
+    "StockAmount": 5,
+    "LentAmount": 0,
+    "TotalAmount": 5
   },
   {
-    "BookNo": 3,
+    "BookNo": 2,
     "Title": "Yeni bir kitap",
     "Author": "Hasan Yılmaz",
     "ISBN": "123-0987442536",
-    "StockAmount": 2,
-    "LentAmount": 0
+    "StockAmount": 1,
+    "LentAmount": 0,
+    "TotalAmount": 1
+  },
+  {
+    "BookNo": 3,
+    "Title": "Debug Buuuuk",
+    "Author": "Ben Degilim",
+    "ISBN": "123",
+    "StockAmount": 6,
+    "LentAmount": 0,
+    "TotalAmount": 6
   }
 ]

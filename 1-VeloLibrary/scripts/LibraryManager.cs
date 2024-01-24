@@ -13,6 +13,30 @@ namespace VeloLibrary
         readonly string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
         List<Book> books = new List<Book>();
 
+        Book GetBook(string title)
+        {
+            for (int i = 0; i < books.Count; i++)
+            {
+                if (title == books[i].Title)
+                {
+                    return books[i];
+                }
+            }
+            return null;
+        }
+        Book[] GetBooks(string author)
+        {
+            Book[] _books = null;
+            for (int i = 0; i < books.Count; i++)
+            {
+                if (author == books[i].Author)
+                {
+                    _books.Append(books[i]);
+                }
+            }
+            return _books;
+        }
+
         public void CreateLibrary()
         {
             if (File.Exists(jsonFilePath))
@@ -65,9 +89,13 @@ namespace VeloLibrary
         {
             foreach (Book book in books)
             {
-                //bookid leri indexlere eşleyerek id ile kitap çağrmayı kolaylaştırabiliriz.
+                //her kitap eklenip cıkarıldığında list idlere göre kitaplar sıralanır
+                //bookno lari indexlere eşleyerek no ile kitap çağrmayı kolaylaştırabiliriz.
                 book.BookNo = books.IndexOf(book);
+                // totalAmount her seferinde lent+stock size olacaktır.
+                book.TotalAmount = book.LentAmount + book.StockAmount;
             }
+            // her kitap ekleme çıkarma işlemi sonrası json dosyamızı güncelliyoruz.
             File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(books, Formatting.Indented));
         }
 
@@ -86,13 +114,13 @@ namespace VeloLibrary
 
             Console.WriteLine(" s - Show books list."); //done
             Console.WriteLine(" a - Add a book to library"); //done
-            Console.WriteLine(" r - Remove a book from library");
-            Console.WriteLine(" d - Delete book from library list");
-            Console.WriteLine(" f - Find a book in library");
-            Console.WriteLine(" b - Borrow a book from library");
-            Console.WriteLine(" t - Return a book to library");
-            Console.WriteLine(" c - Clear");
-            Console.WriteLine(" x - Exit");
+            Console.WriteLine(" r - Remove a book from library"); //done
+            Console.WriteLine(" d - Delete book from library list"); //done
+            Console.WriteLine(" f - Find a book in library"); //done
+            Console.WriteLine(" b - Borrow a book from library"); //done
+            Console.WriteLine(" t - Return a book to library"); //done
+            Console.WriteLine(" c - Clear"); //done
+            Console.WriteLine(" x - Exit"); //done
 
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
@@ -110,8 +138,42 @@ namespace VeloLibrary
 
                 case "a":
                     AddBook();
+                    PressToContinue();
+                    Operations();
                     break;
 
+                case "r":
+                    RemoveBook();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "d":
+                    DeleteBook();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "f":
+                    FindBook();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "b":
+                    BarrowBook();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "t":
+                    ReturnBook();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                // ****************************
+                // console operations
                 case "c":
                     Console.Clear();
                     Operations();
@@ -139,6 +201,21 @@ namespace VeloLibrary
         }
 
 
+        void ErrorCall(Action f, string message = null)
+        {
+            Console.WriteLine(message ?? "Invalid entry! " + " Want to try again? (y)es?");
+            string line = Console.ReadLine();
+            if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
+            {
+                Console.WriteLine("\n");
+                ShowBookList();
+                f();
+            }
+            else
+            {
+                Operations();
+            }
+        }
 
         void PressToContinue()
         {
@@ -162,7 +239,7 @@ namespace VeloLibrary
         }
 
 
-        private void AddBook()
+        void AddBook()
         {
             ShowBookList();
             Console.BackgroundColor = ConsoleColor.Gray;
@@ -181,21 +258,39 @@ namespace VeloLibrary
                 try
                 {
                     int id = Convert.ToInt32(addLine);
-                    if (AddExistingBook(id))
+                    if (!AddExistingBook(id))
                     {
-                        PressToContinue();
-                    }
-                    else
-                    {
-                        AddError();
+                        ErrorCall(AddBook);
                     }
                 }
                 catch
                 {
-                    AddError();
+                    ErrorCall(AddBook);
                 }
             }
-            Operations();
+        }
+
+        bool InvalidStringEntry(string line)
+        {
+            switch (line)
+            {
+                // simdilik on adet space kadar invalidString sayılıcak
+                // sonradan diğer istenmeyen stringler de eklenebilir.
+                case "":
+                case " ":
+                case "  ":
+                case "   ":
+                case "    ":
+                case "     ":
+                case "      ":
+                case "       ":
+                case "        ":
+                case "         ":
+                case "          ":
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         void CreateAndAddBookToLibrary()
@@ -205,17 +300,17 @@ namespace VeloLibrary
 
             Console.WriteLine("Book Title: ");
             readedLine = Console.ReadLine();
-            if (readedLine == "") CreateError();
+            if (InvalidStringEntry(readedLine)) ErrorCall(CreateAndAddBookToLibrary, "Invalid book title,");
             else book.Title = readedLine;
 
             Console.WriteLine("Book Author: ");
             readedLine = Console.ReadLine();
-            if (readedLine == "") CreateError();
+            if (InvalidStringEntry(readedLine)) ErrorCall(CreateAndAddBookToLibrary, "Invalid author name,");
             else book.Author = readedLine;
 
             Console.WriteLine("Book ISBN: ");
             readedLine = Console.ReadLine();
-            if (readedLine == "") CreateError();
+            if (InvalidStringEntry(readedLine)) ErrorCall(CreateAndAddBookToLibrary, "Invalid ISBN,");
             else book.ISBN = readedLine;
 
             Console.WriteLine("How many copy do you add? ");
@@ -223,42 +318,10 @@ namespace VeloLibrary
             {
                 int stockSize = Convert.ToInt32(Console.ReadLine());
                 AddBookToLibrary(book, stockSize);
-                PressToContinue();
             }
             catch
             {
-                CreateError();
-            }
-        }
-
-        void CreateError()
-        {
-            Console.WriteLine("It is not a valid entry! \nWant to try again. (y)es?");
-            string line = Console.ReadLine();
-            if (line == "y" || line == "yes")
-            {
-                Console.WriteLine("\n");
-                CreateAndAddBookToLibrary();
-            }
-            else
-            {
-                Operations();
-            }
-        }
-
-        void AddError()
-        {
-            Console.WriteLine("Invalid entry! \nWant to try again? (y)es?");
-            string line = Console.ReadLine();
-            if (line == "y" || line == "yes")
-            {
-                Console.WriteLine("\n");
-                ShowBookList();
-                AddBook();
-            }
-            else
-            {
-                Operations();
+                ErrorCall(CreateAndAddBookToLibrary);
             }
         }
 
@@ -303,27 +366,335 @@ namespace VeloLibrary
             RefreshBooksJson();
         }
 
-        void RemoveBookFromLibrary(Book book)
+        void RemoveBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' or 'Book Title' to remove.");
+            Console.ResetColor();
+            string addLine = Console.ReadLine();
+
+            try
+            {
+                int id = Convert.ToInt32(addLine);
+                if (id >= 0 && id < books.Count)
+                {
+                    Console.WriteLine("How many books want to remove?");
+                    try
+                    {
+                        int amount = Convert.ToInt32(Console.ReadLine());
+                        RemoveBookFromLibrary(books[id], amount);
+                    }
+                    catch
+                    {
+                        ErrorCall(RemoveBook);
+                    }
+                }
+                else
+                {
+                    ErrorCall(RemoveBook);
+                }
+
+            }
+            catch
+            {
+                Book _book = GetBook(addLine);
+
+                if (_book != null)
+                {
+                    Console.WriteLine("How many books want to remove?");
+                    try
+                    {
+                        int amount = Convert.ToInt32(Console.ReadLine());
+                        RemoveBookFromLibrary(books[_book.BookNo], amount);
+                    }
+                    catch
+                    {
+                        ErrorCall(RemoveBook);
+                    }
+                }
+                else
+                {
+                    ErrorCall(RemoveBook, "Wrong book title!");
+                }
+            }
+        }
+
+        void RemoveBookFromLibrary(Book book, int? amount = null)
         {
             if (books.Contains(book))
             {
-                book.StockAmount--;
+                book.StockAmount -= amount ?? 1;
                 if (book.StockAmount < 0) book.StockAmount = 0;
+
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.WriteLine("\n" + (amount ?? 1) + " books '" + book.Title + "' has been removed.");
+                Console.ResetColor();
+
             }
             RefreshBooksJson();
         }
 
-        void BorrowABookWithId(int id)
+        void DeleteBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' or 'Book Title' to delete book.");
+            Console.ResetColor();
+            string addLine = Console.ReadLine();
+
+            try
+            {
+                int id = Convert.ToInt32(addLine);
+                if (id >= 0 && id < books.Count)
+                {
+                    Console.WriteLine(books[id].Title + " removed from library list.");
+                    books.RemoveAt(id);
+                    RefreshBooksJson();
+                }
+                else
+                {
+                    ErrorCall(DeleteBook);
+                }
+
+            }
+            catch
+            {
+                Book _book = GetBook(addLine);
+
+                if (_book != null)
+                {
+                    Console.WriteLine(_book.Title + " removed from library list.");
+                    books.RemoveAt(_book.BookNo);
+                    RefreshBooksJson();
+                }
+                else
+                {
+                    ErrorCall(DeleteBook, "Wrong book title!");
+                }
+            }
+        }
+
+        void FindBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' or 'Book Title' to find and select book.");
+            Console.ResetColor();
+
+            Book seletedBook = null;
+
+            string addLine = Console.ReadLine();
+
+            try
+            {
+                int id = Convert.ToInt32(addLine);
+                if (id >= 0 && id < books.Count)
+                {
+                    seletedBook = books[id];
+                }
+                else
+                {
+                    ErrorCall(FindBook);
+                    return;
+                }
+
+            }
+            catch
+            {
+                Book _book = GetBook(addLine);
+
+                if (_book != null)
+                {
+                    seletedBook = books[_book.BookNo];
+                }
+                else
+                {
+                    ErrorCall(FindBook, "Wrong book title!");
+                    return;
+                }
+            }
+
+            if (seletedBook != null)
+            {
+                Console.BackgroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.WriteLine(seletedBook.Title + " selected.\nWhat do you want to do? ");
+                Console.ResetColor();
+                Console.WriteLine("(b)orrow, re(t)urn, (a)dd, (r)emove, (d)elete book?");
+                string line = Console.ReadLine();
+                switch (line)
+                {
+                    case "b":
+                        if (!BorrowABookWithId(seletedBook.BookNo))
+                            ErrorCall(FindBook);
+                        break;
+
+                    case "t":
+                        if (!ReturnABookWithId(seletedBook.BookNo))
+                            ErrorCall(FindBook);
+                        break;
+
+                    case "a":
+                        Console.WriteLine("How many books want to add?");
+                        try
+                        {
+                            int amount = Convert.ToInt32(Console.ReadLine());
+                            AddBookToLibrary(seletedBook, amount);
+                        }
+                        catch
+                        {
+                            ErrorCall(FindBook);
+                        }
+                        break;
+
+                    case "r":
+                        Console.WriteLine("How many books want to remove?");
+                        try
+                        {
+                            int amount = Convert.ToInt32(Console.ReadLine());
+                            RemoveBookFromLibrary(seletedBook, amount);
+                        }
+                        catch
+                        {
+                            ErrorCall(FindBook);
+                        }
+                        break;
+
+                    case "d":
+                        Console.WriteLine("Are you sure to delete this book? (y)es?");
+                        string _line = Console.ReadLine();
+                        if (_line == "y" && _line == "yes")
+                        {
+                            Console.WriteLine(seletedBook.Title + " removed from library list.");
+                            books.RemoveAt(seletedBook.BookNo);
+                            RefreshBooksJson();
+                        }
+                        else
+                        {
+                            ErrorCall(FindBook);
+                        }
+                        break;
+
+                    default:
+                        ErrorCall(FindBook);
+                        break;
+                }
+            }
+
+        }
+
+        void BarrowBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' or 'Book Title' to borrow a book.");
+            Console.ResetColor();
+            string addLine = Console.ReadLine();
+
+            try
+            {
+                int id = Convert.ToInt32(addLine);
+                if (id >= 0 && id < books.Count)
+                {
+                    if (!BorrowABookWithId(id))
+                        ErrorCall(BarrowBook);
+                }
+                else
+                {
+                    ErrorCall(BarrowBook);
+                }
+
+            }
+            catch
+            {
+                Book _book = GetBook(addLine);
+
+                if (_book != null)
+                {
+                    if (!BorrowABookWithId(_book.BookNo))
+                        ErrorCall(BarrowBook);
+                }
+                else
+                {
+                    ErrorCall(BarrowBook, "Wrong book title!");
+                }
+            }
+        }
+
+        bool BorrowABookWithId(int id)
         {
             if (books[id].StockAmount > 0)
             {
                 books[id].LentAmount++;
-                Console.WriteLine(books[id].Title + " - book was lent");
+                Console.WriteLine(books[id].Title + "   borrowed from library.");
                 RemoveBookFromLibrary(books[id]);
+                return true;
             }
             else
             {
                 Console.WriteLine(books[id].Title + " - book is out of library stocks");
+                return false;
+            }
+        }
+
+        void ReturnBook()
+        {
+            ShowBookList();
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine("Enter 'Book No' or 'Book Title' to return a book.");
+            Console.ResetColor();
+            string addLine = Console.ReadLine();
+
+            try
+            {
+                int id = Convert.ToInt32(addLine);
+                if (id >= 0 && id < books.Count)
+                {
+                    if (!ReturnABookWithId(id))
+                        ErrorCall(ReturnBook);
+                }
+                else
+                {
+                    ErrorCall(ReturnBook);
+                }
+
+            }
+            catch
+            {
+                Book _book = GetBook(addLine);
+
+                if (_book != null)
+                {
+                    if (!ReturnABookWithId(_book.BookNo))
+                        ErrorCall(ReturnBook);
+                }
+                else
+                {
+                    ErrorCall(BarrowBook, "Wrong book title!");
+                }
+            }
+        }
+
+        bool ReturnABookWithId(int id)
+        {
+            if (books[id].LentAmount > 0)
+            {
+                books[id].LentAmount--;
+                Console.WriteLine(books[id].Title + " - book was returned");
+                AddBookToLibrary(books[id]);
+                return true;
+            }
+            else
+            {
+                Console.WriteLine(books[id].Title + " - there is no lent book");
+                return false;
             }
         }
 
