@@ -10,9 +10,10 @@ namespace VeloLibrary
 {
     internal class LibraryManager
     {
-        readonly string jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
+        readonly string books_jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
+        readonly string lents_jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lents.json");
+        List<LentData> lents = new List<LentData>();
         List<Book> books = new List<Book>();
-
         Book GetBook(string title)
         {
             for (int i = 0; i < books.Count; i++)
@@ -31,30 +32,61 @@ namespace VeloLibrary
             {
                 if (author == books[i].Author)
                 {
-                    _books.Append(books[i]);
+                    _books.Append(books[i]).ToArray();
                 }
             }
             return _books;
         }
 
+        void LentBookAdd(Book book, DateTime dt)
+        {
+            LentData ld = new LentData(book, dt);
+            lents.Add(ld);
+            RefreshLentsJson();
+        }
+
         public void CreateLibrary()
         {
-            if (File.Exists(jsonFilePath))
+            if (File.Exists(books_jsonFilePath))
             {
                 books.Clear();
-                books = ReadJsonToList(jsonFilePath);
-                //Console.WriteLine("Existing Library Loaded."); //for debuging
+                books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(books_jsonFilePath));
             }
             else
             {
-                InitJsonFile();
-                //Console.WriteLine("New Library Created."); //for debuging
+                InitBookJsonFile();
+            }
+
+            if (File.Exists(lents_jsonFilePath))
+            {
+                lents.Clear();
+                lents = JsonConvert.DeserializeObject<List<LentData>>(File.ReadAllText(lents_jsonFilePath));
+            }
+            else
+            {
+                InitLentJsonFile();
             }
             Operations();
         }
 
         #region JSON Methods
-        void InitJsonFile()
+        void InitLentJsonFile()
+        {
+            lents.Clear();
+            foreach (var book in books)
+            {
+                if (book.LentAmount > 0)
+                {
+                    for (int i = 0; i < book.LentAmount; i++)
+                    {
+                        LentBookAdd(book, DateTime.Today);
+                    }
+                }
+            }
+            RefreshLentsJson();
+        }
+
+        void InitBookJsonFile()
         {
             Book dummyBook0 = new Book
             {
@@ -63,7 +95,7 @@ namespace VeloLibrary
                 Author = "Dummy_Author",
                 ISBN = "000-0000000000",
                 StockAmount = 0,
-                LentAmount = 0
+                LentAmount = 0,
             };
 
             Book dummyBook01 = new Book
@@ -96,13 +128,13 @@ namespace VeloLibrary
                 book.TotalAmount = book.LentAmount + book.StockAmount;
             }
             // her kitap ekleme çıkarma işlemi sonrası json dosyamızı güncelliyoruz.
-            File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(books, Formatting.Indented));
+            File.WriteAllText(books_jsonFilePath, JsonConvert.SerializeObject(books, Formatting.Indented));
+        }
+        void RefreshLentsJson()
+        {
+            File.WriteAllText(lents_jsonFilePath, JsonConvert.SerializeObject(lents, Formatting.Indented));
         }
 
-        List<Book> ReadJsonToList(string filePath)
-        {
-            return JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(filePath));
-        }
         #endregion
 
         void Operations()
@@ -113,6 +145,7 @@ namespace VeloLibrary
             Console.ResetColor();
 
             Console.WriteLine(" s - Show books list."); //done
+            Console.WriteLine(" l - Show lent books list.");
             Console.WriteLine(" a - Add a book to library"); //done
             Console.WriteLine(" r - Remove a book from library"); //done
             Console.WriteLine(" d - Delete book from library list"); //done
@@ -132,6 +165,12 @@ namespace VeloLibrary
 
                 case "s":
                     ShowBookList();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "l":
+                    ShowLentBookList();
                     PressToContinue();
                     Operations();
                     break;
@@ -238,6 +277,25 @@ namespace VeloLibrary
             }
         }
 
+        void ShowLentBookList()
+        {
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            if (lents.Count > 0)
+            {
+                Console.WriteLine("\n  Lent Books List:                        ");
+                foreach (var lent in lents)
+                {
+                    Book book = lent.book;
+                    Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {lent.BorrowTime}  |  Return Date: {lent.ReturnTime}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("\n  There are no lent books now             ");
+            }
+            Console.ResetColor();
+        }
 
         void AddBook()
         {
@@ -634,6 +692,7 @@ namespace VeloLibrary
                 books[id].LentAmount++;
                 Console.WriteLine(books[id].Title + "   borrowed from library.");
                 RemoveBookFromLibrary(books[id]);
+                LentBookAdd(books[id], DateTime.Today);
                 return true;
             }
             else
@@ -697,6 +756,10 @@ namespace VeloLibrary
                 return false;
             }
         }
+
+
+
+
 
     }
 }

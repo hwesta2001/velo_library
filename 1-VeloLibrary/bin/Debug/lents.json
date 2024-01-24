@@ -1,0 +1,15 @@
+[
+  {
+    "book": {
+      "BookNo": 1,
+      "Title": "Dummy_Book1",
+      "Author": "Dummy_Author1",
+      "ISBN": "000-0000000001",
+      "StockAmount": 0,
+      "LentAmount": 1,
+      "TotalAmount": 1
+    },
+    "BorrowTime": "2024-01-24T00:00:00+03:00",
+    "ReturnTime": "2024-02-07T00:00:00+03:00"
+  }
+]
