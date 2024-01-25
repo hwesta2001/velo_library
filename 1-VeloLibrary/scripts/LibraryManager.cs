@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 
 namespace VeloLibrary
@@ -47,6 +45,8 @@ namespace VeloLibrary
 
         public void CreateLibrary()
         {
+            //book.json dossyası varsa ordan books listesini cekip oluşturur
+            //book.json dosyası yoksa yeni bir tane oluşturup iki tane dummy_dook ekler.
             if (File.Exists(books_jsonFilePath))
             {
                 books.Clear();
@@ -57,6 +57,9 @@ namespace VeloLibrary
                 InitBookJsonFile();
             }
 
+
+            //lents.json dosyası var ise lent bookları ordan çeker.
+            //yoksa yeni bir lents.json yaratır
             if (File.Exists(lents_jsonFilePath))
             {
                 lents.Clear();
@@ -145,19 +148,20 @@ namespace VeloLibrary
             Console.ResetColor();
 
             Console.WriteLine(" s - Show books list."); //done
-            Console.WriteLine(" l - Show lent books list.");
             Console.WriteLine(" a - Add a book to library"); //done
             Console.WriteLine(" r - Remove a book from library"); //done
             Console.WriteLine(" d - Delete book from library list"); //done
             Console.WriteLine(" f - Find a book in library"); //done
             Console.WriteLine(" b - Borrow a book from library"); //done
             Console.WriteLine(" t - Return a book to library"); //done
+            Console.WriteLine(" l - Show lent books list.");//done
+            Console.WriteLine(" o - Show overdue books list.");//done
             Console.WriteLine(" c - Clear"); //done
             Console.WriteLine(" x - Exit"); //done
 
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("What do you want to do?                   ");
+            Console.WriteLine(" What do you want to do?                  ");
             Console.ResetColor();
 
             switch (Console.ReadLine())
@@ -171,6 +175,12 @@ namespace VeloLibrary
 
                 case "l":
                     ShowLentBookList();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "o":
+                    ShowOverdueBooks();
                     PressToContinue();
                     Operations();
                     break;
@@ -258,9 +268,9 @@ namespace VeloLibrary
 
         void PressToContinue()
         {
-            Console.BackgroundColor = ConsoleColor.Black;
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("Press any key to continue...              ");
+            Console.BackgroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine(" Press any key to continue...             ");
             Console.ResetColor();
             Console.ReadKey();
         }
@@ -279,22 +289,65 @@ namespace VeloLibrary
 
         void ShowLentBookList()
         {
-            Console.BackgroundColor = ConsoleColor.Yellow;
-            Console.ForegroundColor = ConsoleColor.Black;
             if (lents.Count > 0)
             {
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Black;
                 Console.WriteLine("\n  Lent Books List:                        ");
+                Console.ResetColor();
+
                 foreach (var lent in lents)
                 {
                     Book book = lent.book;
-                    Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {lent.BorrowTime}  |  Return Date: {lent.ReturnTime}");
+                    Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {lent.BorrowTime.ToShortDateString()}  |  Return Date: {lent.ReturnTime.ToShortDateString()}");
+                }
+                Console.BackgroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Black;
+                Console.WriteLine("Do you want list overdue books. (y)es?");
+                Console.ResetColor();
+                string line = Console.ReadLine();
+                if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
+                {
+                    ShowOverdueBooks();
                 }
             }
             else
             {
-                Console.WriteLine("\n  There are no lent books now             ");
+                Console.WriteLine("\n  There are no lent books now.             ");
             }
-            Console.ResetColor();
+        }
+
+        private void ShowOverdueBooks()
+        {
+            Console.WriteLine("Book return period is 14 days");
+            if (lents.Count > 0)
+            {
+                List<LentData> expiredBooks = new List<LentData>();
+                for (int i = 0; i < lents.Count; i++)
+                {
+                    if (DateTime.Today.Subtract(lents[i].BorrowTime).Days > 14)
+                    {
+                        expiredBooks.Add(lents[i]);
+                    }
+                }
+                if (expiredBooks.Count > 0)
+                {
+                    foreach (var item in expiredBooks)
+                    {
+                        Book book = item.book;
+                        Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {item.BorrowTime.ToShortDateString()}  |  Return Date: {item.ReturnTime.ToShortDateString()} | Overdue Time: {DateTime.Today.Subtract(item.BorrowTime).Days}");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("There is no overdue books");
+                }
+
+            }
+            else
+            {
+                Console.WriteLine("There are no lent books");
+            }
         }
 
         void AddBook()
@@ -485,12 +538,7 @@ namespace VeloLibrary
             {
                 book.StockAmount -= amount ?? 1;
                 if (book.StockAmount < 0) book.StockAmount = 0;
-
-                Console.BackgroundColor = ConsoleColor.Yellow;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine("\n" + (amount ?? 1) + " books '" + book.Title + "' has been removed.");
-                Console.ResetColor();
-
+                Console.WriteLine((amount ?? 1) + " books '" + book.Title + "' has been removed.");
             }
             RefreshBooksJson();
         }
@@ -510,8 +558,15 @@ namespace VeloLibrary
                 if (id >= 0 && id < books.Count)
                 {
                     Console.WriteLine(books[id].Title + " removed from library list.");
-                    books.RemoveAt(id);
-                    RefreshBooksJson();
+                    if (books[id].LentAmount > 0)
+                    {
+                        ErrorCall(DeleteBook, " You can not delete lent books.\n Please wait for return of the book.\n");
+                    }
+                    else
+                    {
+                        books.RemoveAt(id);
+                        RefreshBooksJson();
+                    }
                 }
                 else
                 {

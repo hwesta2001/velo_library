@@ -4,8 +4,8 @@
     "Title": "Dummy_Book",
     "Author": "Dummy_Author",
     "ISBN": "000-0000000000",
-    "StockAmount": 10,
-    "LentAmount": 0,
+    "StockAmount": 8,
+    "LentAmount": 2,
     "TotalAmount": 10
   },
   {
@@ -16,5 +16,14 @@
     "StockAmount": 0,
     "LentAmount": 1,
     "TotalAmount": 1
+  },
+  {
+    "BookNo": 2,
+    "Title": "Yeni bir kitap",
+    "Author": "Hasan Yılmaz",
+    "ISBN": "123-09876443231",
+    "StockAmount": 3,
+    "LentAmount": 1,
+    "TotalAmount": 4
   }
 ]

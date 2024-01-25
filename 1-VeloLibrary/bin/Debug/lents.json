@@ -11,5 +11,44 @@
     },
     "BorrowTime": "2024-01-24T00:00:00+03:00",
     "ReturnTime": "2024-02-07T00:00:00+03:00"
+  },
+  {
+    "book": {
+      "BookNo": 0,
+      "Title": "Dummy_Book",
+      "Author": "Dummy_Author",
+      "ISBN": "000-0000000000",
+      "StockAmount": 8,
+      "LentAmount": 2,
+      "TotalAmount": 10
+    },
+    "BorrowTime": "2024-01-25T00:00:00+03:00",
+    "ReturnTime": "2024-02-08T00:00:00+03:00"
+  },
+  {
+    "book": {
+      "BookNo": 0,
+      "Title": "Dummy_Book",
+      "Author": "Dummy_Author",
+      "ISBN": "000-0000000000",
+      "StockAmount": 8,
+      "LentAmount": 2,
+      "TotalAmount": 10
+    },
+    "BorrowTime": "2024-01-25T00:00:00+03:00",
+    "ReturnTime": "2024-02-08T00:00:00+03:00"
+  },
+  {
+    "book": {
+      "BookNo": 2,
+      "Title": "Yeni bir kitap",
+      "Author": "Hasan Yılmaz",
+      "ISBN": "123-09876443231",
+      "StockAmount": 3,
+      "LentAmount": 1,
+      "TotalAmount": 4
+    },
+    "BorrowTime": "2024-01-25T00:00:00+03:00",
+    "ReturnTime": "2024-02-08T00:00:00+03:00"
   }
 ]
