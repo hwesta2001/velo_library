@@ -42,14 +42,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="1-VeloLibrary.exe" size="19928">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="1-VeloLibrary.exe" size="21976">
       <assemblyIdentity name="1-VeloLibrary" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>hvsEW8tZ3ZLMBEOgZZ/gXi8Mq7gh9WT48L2uKAuOviQ=</dsig:DigestValue>
+        <dsig:DigestValue>YpqLlQWnP8KhtXzRpGkiBLuAYYx+f8Qe0p4oKl/KL5k=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

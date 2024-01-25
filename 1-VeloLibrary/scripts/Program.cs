@@ -5,8 +5,11 @@ namespace VeloLibrary
     internal class Program
     {
         static LibraryManager libraryManager;
+        static InitRandomLibrary InitRandom = new InitRandomLibrary();
         static void Main(string[] args)
         {
+            InitRandom.MakeBooks();
+            Console.ReadKey();
             WelcomeSheet();
             libraryManager = new LibraryManager();
             libraryManager.CreateLibrary();

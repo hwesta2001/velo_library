@@ -75,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InitRandomLibrary.cs" />
     <Compile Include="scripts\Book.cs" />
     <Compile Include="scripts\LibraryManager.cs" />
     <Compile Include="scripts\Program.cs" />
