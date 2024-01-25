@@ -56,8 +56,6 @@ namespace VeloLibrary
             {
                 InitBookJsonFile();
             }
-
-
             //lents.json dosyası var ise lent bookları ordan çeker.
             //yoksa yeni bir lents.json yaratır
             if (File.Exists(lents_jsonFilePath))
@@ -147,17 +145,17 @@ namespace VeloLibrary
             Console.WriteLine("\n*******        OPERATIONS           ******");
             Console.ResetColor();
 
-            Console.WriteLine(" s - Show books list."); //done
-            Console.WriteLine(" a - Add a book to library"); //done
-            Console.WriteLine(" r - Remove a book from library"); //done
-            Console.WriteLine(" d - Delete book from library list"); //done
-            Console.WriteLine(" f - Find a book in library"); //done
-            Console.WriteLine(" b - Borrow a book from library"); //done
-            Console.WriteLine(" t - Return a book to library"); //done
-            Console.WriteLine(" l - Show lent books list.");//done
-            Console.WriteLine(" o - Show overdue books list.");//done
-            Console.WriteLine(" c - Clear"); //done
-            Console.WriteLine(" x - Exit"); //done
+            Console.WriteLine(" s - (S)how books list.");                     //done
+            Console.WriteLine(" a - (A)dd a book to library");                //done
+            Console.WriteLine(" r - (R)emove a book from library");           //done
+            Console.WriteLine(" d - (D)elete book from library list");        //done
+            Console.WriteLine(" f - (F)ind a book in library");               //done
+            Console.WriteLine(" b - (B)orrow a book from library");           //done
+            Console.WriteLine(" t - Re(t)urn a book to library");             //done
+            Console.WriteLine(" l - Show (l)ent books list.");                //done
+            Console.WriteLine(" o - Show (o)verdue books list.");             //done
+            Console.WriteLine(" c - (C)lear");                                //done
+            Console.WriteLine(" x - E(x)it");                                 //done
 
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
@@ -173,17 +171,6 @@ namespace VeloLibrary
                     Operations();
                     break;
 
-                case "l":
-                    ShowLentBookList();
-                    PressToContinue();
-                    Operations();
-                    break;
-
-                case "o":
-                    ShowOverdueBooks();
-                    PressToContinue();
-                    Operations();
-                    break;
 
                 case "a":
                     AddBook();
@@ -221,8 +208,21 @@ namespace VeloLibrary
                     Operations();
                     break;
 
-                // ****************************
-                // console operations
+                case "l":
+                    ShowLentBookList();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                case "o":
+                    ShowOverdueBooks();
+                    PressToContinue();
+                    Operations();
+                    break;
+
+                //********************//
+                // console operations //
+                //********************//
                 case "c":
                     Console.Clear();
                     Operations();
@@ -236,7 +236,7 @@ namespace VeloLibrary
                     Console.WriteLine("Invalid entry                        ");
                     Console.WriteLine("Would you like to continue? (y)es?   ");
                     string line = Console.ReadLine();
-                    if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
+                    if (IsYes(line))
                     {
                         Operations();
                     }
@@ -252,9 +252,9 @@ namespace VeloLibrary
 
         void ErrorCall(Action f, string message = null)
         {
-            Console.WriteLine(message ?? "Invalid entry! " + " Want to try again? (y)es?");
+            Console.WriteLine((message ?? "Invalid entry! ") + " Want to try again? (y)es?");
             string line = Console.ReadLine();
-            if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
+            if (IsYes(line))
             {
                 Console.WriteLine("\n");
                 ShowBookList();
@@ -306,7 +306,7 @@ namespace VeloLibrary
                 Console.WriteLine("Do you want list overdue books. (y)es?");
                 Console.ResetColor();
                 string line = Console.ReadLine();
-                if (line == "y" || line == "yes" || line == "Yes" || line == "Y" || line == "YES")
+                if (IsYes(line))
                 {
                     ShowOverdueBooks();
                 }
@@ -398,6 +398,21 @@ namespace VeloLibrary
                 case "        ":
                 case "         ":
                 case "          ":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        bool IsYes(string line)
+        {
+            switch (line)
+            {
+                case "y":
+                case "yes":
+                case "Y":
+                case "Yes":
+                case "YES":
                     return true;
                 default:
                     return false;
@@ -551,19 +566,18 @@ namespace VeloLibrary
             Console.WriteLine("Enter 'Book No' or 'Book Title' to delete book.");
             Console.ResetColor();
             string addLine = Console.ReadLine();
-
             try
             {
                 int id = Convert.ToInt32(addLine);
                 if (id >= 0 && id < books.Count)
                 {
-                    Console.WriteLine(books[id].Title + " removed from library list.");
                     if (books[id].LentAmount > 0)
                     {
-                        ErrorCall(DeleteBook, " You can not delete lent books.\n Please wait for return of the book.\n");
+                        ErrorCall(DeleteBook, "You can not delete lent books.\nPlease wait for return of the book.");
                     }
                     else
                     {
+                        Console.WriteLine(books[id].Title + " removed from library list.");
                         books.RemoveAt(id);
                         RefreshBooksJson();
                     }
@@ -680,12 +694,19 @@ namespace VeloLibrary
 
                     case "d":
                         Console.WriteLine("Are you sure to delete this book? (y)es?");
-                        string _line = Console.ReadLine();
-                        if (_line == "y" && _line == "yes")
+                        string d_line = Console.ReadLine();
+                        if (IsYes(d_line))
                         {
-                            Console.WriteLine(seletedBook.Title + " removed from library list.");
-                            books.RemoveAt(seletedBook.BookNo);
-                            RefreshBooksJson();
+                            if (seletedBook.LentAmount > 0)
+                            {
+                                ErrorCall(FindBook, (seletedBook.Title + " book was lent. Please wait for return the book."));
+                            }
+                            else
+                            {
+                                Console.WriteLine(seletedBook.Title + " removed from library list.");
+                                books.RemoveAt(seletedBook.BookNo);
+                                RefreshBooksJson();
+                            }
                         }
                         else
                         {
@@ -811,10 +832,6 @@ namespace VeloLibrary
                 return false;
             }
         }
-
-
-
-
 
     }
 }
