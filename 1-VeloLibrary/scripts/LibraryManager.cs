@@ -10,15 +10,56 @@ namespace VeloLibrary
     {
         readonly string books_jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "books.json");
         readonly string lents_jsonFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lents.json");
-        List<LentData> lents = new List<LentData>();
-        List<Book> books = new List<Book>();
+
+        // BOOKS ve LENT_BOOKS property şeklinde atanmasının sebebi...
+        // başka sistemler ve classlar tarfından da çekilip kullanılabilir olmasını sağlamak içindir.
+        public List<Book> BOOKS { get; private set; } = new List<Book>();
+        public List<LentData> LENT_BOOKS { get; private set; } = new List<LentData>();
+
+        ///uniqueLentId her kitap ödünç alındığında bir arttırılır...
+        //bu idler her ödünç kitap için eşsiz olduğu için kitap ödünc alımında ekrana yazdırılır...
+        //... iade işlemi bu uniqueLentId ile yapılır.
+        int uniqueLentId = 0;
+
+        void LentBookAdd(Book book, DateTime borrowTime)
+        {
+            uniqueLentId++;
+            LentData ld = new LentData(uniqueLentId, book, borrowTime);
+            LENT_BOOKS.Add(ld);
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("\nYou borrowed the book '" + book.Title + "'.");
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.WriteLine("Your Unique Lent Book ID is: '" + ld.UniqLentId + "'            ");
+            Console.WriteLine("Don't forget 'Unique Lent Book ID'!            ");
+            Console.WriteLine("You need it for return the book.               ");
+            Console.ResetColor();
+            RefreshLentsJson();
+        }
+        bool GetLentedBookWithLentId(int uniqLentId, out Book book, out int lentIndex)
+        {
+            lentIndex = -1;
+            book = null;
+            bool r_bool = false;
+            for (int i = 0; i < LENT_BOOKS.Count; i++)
+            {
+                if (uniqLentId == LENT_BOOKS[i].UniqLentId)
+                {
+                    book = LENT_BOOKS[i].book;
+                    lentIndex = i;
+                    r_bool = true;
+                }
+            }
+            return r_bool;
+        }
         Book GetBook(string title)
         {
-            for (int i = 0; i < books.Count; i++)
+            for (int i = 0; i < BOOKS.Count; i++)
             {
-                if (title == books[i].Title)
+                if (title == BOOKS[i].Title)
                 {
-                    return books[i];
+                    return BOOKS[i];
                 }
             }
             return null;
@@ -26,117 +67,154 @@ namespace VeloLibrary
         Book[] GetBooks(string author)
         {
             Book[] _books = null;
-            for (int i = 0; i < books.Count; i++)
+            for (int i = 0; i < BOOKS.Count; i++)
             {
-                if (author == books[i].Author)
+                if (author == BOOKS[i].Author)
                 {
-                    _books.Append(books[i]).ToArray();
+                    _books.Append(BOOKS[i]).ToArray();
                 }
             }
             return _books;
         }
 
-        void LentBookAdd(Book book, DateTime dt)
+        bool IsYes(string line)
         {
-            LentData ld = new LentData(book, dt);
-            lents.Add(ld);
-            RefreshLentsJson();
+            switch (line)
+            {
+                case "y":
+                case "yes":
+                case "Y":
+                case "Yes":
+                case "YES":
+                    return true;
+                default:
+                    return false;
+            }
         }
-
-        public void CreateLibrary()
+        bool InvalidStringEntry(string line)
         {
-            //book.json dossyası varsa ordan books listesini cekip oluşturur
-            //book.json dosyası yoksa yeni bir tane oluşturup iki tane dummy_dook ekler.
-            if (File.Exists(books_jsonFilePath))
+            switch (line)
             {
-                books.Clear();
-                books = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(books_jsonFilePath));
+                // simdilik on adet space e kadar invalidString sayılıcak
+                // sonradan diğer istenmeyen stringler de eklenebilir.
+                case "":
+                case " ":
+                case "  ":
+                case "   ":
+                case "    ":
+                case "     ":
+                case "      ":
+                case "       ":
+                case "        ":
+                case "         ":
+                case "          ":
+                    return true;
+                default:
+                    return false;
             }
-            else
-            {
-                InitBookJsonFile();
-            }
-            //lents.json dosyası var ise lent bookları ordan çeker.
-            //yoksa yeni bir lents.json yaratır
-            if (File.Exists(lents_jsonFilePath))
-            {
-                lents.Clear();
-                lents = JsonConvert.DeserializeObject<List<LentData>>(File.ReadAllText(lents_jsonFilePath));
-            }
-            else
-            {
-                InitLentJsonFile();
-            }
-            Operations();
         }
 
         #region JSON Methods
+
+        void InitBookJsonFile()
+        {
+            InitRandomLibrary irb = new InitRandomLibrary();
+            irb.MakeBooks();
+            BOOKS.Clear();
+            BOOKS = irb.RandomBooks;
+            RefreshBooksJson();
+        }
         void InitLentJsonFile()
         {
-            lents.Clear();
-            foreach (var book in books)
+            LENT_BOOKS.Clear();
+
+            // rasgele 0-20 gün arasını bugünden çıkarıp BorrowTime belirlenir.
+            // 14günden büyük cıkan günler için gecikme meydana gelmiş demektir
+            Random rLentTimeBeforeInitDay = new Random();
+            foreach (var book in BOOKS)
             {
                 if (book.LentAmount > 0)
                 {
                     for (int i = 0; i < book.LentAmount; i++)
                     {
-                        LentBookAdd(book, DateTime.Today);
+                        int subtractedDays = rLentTimeBeforeInitDay.Next(0, 20);
+                        LentBookAdd(book, DateTime.Today.AddDays(-subtractedDays));
                     }
                 }
             }
             RefreshLentsJson();
         }
 
-        void InitBookJsonFile()
-        {
-            Book dummyBook0 = new Book
-            {
-                BookNo = 0,
-                Title = "Dummy_Book",
-                Author = "Dummy_Author",
-                ISBN = "000-0000000000",
-                StockAmount = 0,
-                LentAmount = 0,
-            };
-
-            Book dummyBook01 = new Book
-            {
-                BookNo = 1,
-                Title = "Dummy_Book1",
-                Author = "Dummy_Author1",
-                ISBN = "000-0000000001",
-                StockAmount = 0,
-                LentAmount = 0
-            };
-
-            books.Clear();
-            // Add 10 of dummy_book
-            for (int i = 0; i < 10; i++)
-            {
-                AddBookToLibrary(dummyBook0);
-            }
-            AddBookToLibrary(dummyBook01);
-        }
-
         void RefreshBooksJson()
         {
-            foreach (Book book in books)
+            foreach (Book book in BOOKS)
             {
-                //her kitap eklenip cıkarıldığında list idlere göre kitaplar sıralanır
+                //her kitap eklenip cıkarıldığında list indexlere göre kitaplar sıralanır
                 //bookno lari indexlere eşleyerek no ile kitap çağrmayı kolaylaştırabiliriz.
-                book.BookNo = books.IndexOf(book);
+                book.BookNo = BOOKS.IndexOf(book);
                 // totalAmount her seferinde lent+stock size olacaktır.
                 book.TotalAmount = book.LentAmount + book.StockAmount;
             }
             // her kitap ekleme çıkarma işlemi sonrası json dosyamızı güncelliyoruz.
-            File.WriteAllText(books_jsonFilePath, JsonConvert.SerializeObject(books, Formatting.Indented));
+            File.WriteAllText(books_jsonFilePath, JsonConvert.SerializeObject(BOOKS, Formatting.Indented));
         }
         void RefreshLentsJson()
         {
-            File.WriteAllText(lents_jsonFilePath, JsonConvert.SerializeObject(lents, Formatting.Indented));
+            File.WriteAllText(lents_jsonFilePath, JsonConvert.SerializeObject(LENT_BOOKS, Formatting.Indented));
         }
 
         #endregion
+
+
+        public void CreateLibrary() // ANA CALISTIRICI. 
+        {
+            //book.json dosyası varsa ordan books listesini cekip oluşturur.
+            //book.json dosyası yoksa yeni bir tane oluşturup randomBook lar ekler.
+            if (File.Exists(books_jsonFilePath))
+            {
+                BOOKS.Clear();
+                BOOKS = JsonConvert.DeserializeObject<List<Book>>(File.ReadAllText(books_jsonFilePath));
+
+                if (File.Exists(lents_jsonFilePath))
+                {
+                    //lents.json dosyası varsa lent bookları ordan çeker.
+                    LENT_BOOKS.Clear();
+                    LENT_BOOKS = JsonConvert.DeserializeObject<List<LentData>>(File.ReadAllText(lents_jsonFilePath));
+                }
+                else
+                {
+                    //lents.json dosyası yoksa yeni bir random lents.json yaratır.
+                    InitLentJsonFile();
+                }
+
+            }
+            else
+            {
+                InitBookJsonFile();                 // random book lar ekleniyor.
+                File.Delete(lents_jsonFilePath);    // lentJson file siliyor ki aşağıda yeniden yapılacak.
+                InitLentJsonFile();                 // yeni bir random lents.json yaratır.
+            }
+
+
+
+            // her açılışta lents dataadki son UniqLentId ile eşleştir.
+            // böylece her açılışta uniqueLentId ler kaldığı yerden devam eder.
+            uniqueLentId = LENT_BOOKS.Last<LentData>().UniqLentId;
+
+            Console.Clear();
+            WelcomeSheet();
+            Operations();
+        }
+        void WelcomeSheet()
+        {
+            Console.BackgroundColor = ConsoleColor.DarkCyan;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("******************************************");
+            Console.WriteLine("*******  Welcome to Velo Library   *******");
+            Console.WriteLine("*******    Made by Hasan YILMAZ    *******");
+            Console.WriteLine("******************************************");
+            Console.ResetColor();
+        }
 
         void Operations()
         {
@@ -166,54 +244,74 @@ namespace VeloLibrary
             {
 
                 case "s":
+                case "S":
                     ShowBookList();
+                    //toplam kitap sayısı hesapla:
+                    int total = 0;
+                    foreach (var item in BOOKS) total += item.TotalAmount;
+                    Console.WriteLine($"\nThere are {BOOKS.Count} different titled books in library. ");
+                    Console.WriteLine($"There are {total} total books in library.                  ");
                     PressToContinue();
                     Operations();
                     break;
 
 
                 case "a":
+                case "A":
                     AddBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "R":
                 case "r":
                     RemoveBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "D":
                 case "d":
                     DeleteBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "F":
                 case "f":
                     FindBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "B":
                 case "b":
                     BarrowBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "T":
                 case "t":
+                    ShowLentBookList();
                     ReturnBook();
                     PressToContinue();
                     Operations();
                     break;
 
+                case "L":
                 case "l":
                     ShowLentBookList();
+                    Console.WriteLine("t - Do you want to re(t)urn a book?");
+                    if (Console.ReadLine() == "t")
+                    {
+                        ReturnBook();
+                    }
                     PressToContinue();
                     Operations();
                     break;
 
+                case "O":
                 case "o":
                     ShowOverdueBooks();
                     PressToContinue();
@@ -223,15 +321,20 @@ namespace VeloLibrary
                 //********************//
                 // console operations //
                 //********************//
+                case "C":
                 case "c":
                     Console.Clear();
                     Operations();
                     break;
 
                 case "x":
+                case "X":
                     Environment.Exit(0);
                     break;
 
+                //********************//
+                // default operation  //
+                //********************//
                 default:
                     Console.WriteLine("Invalid entry                        ");
                     Console.WriteLine("Would you like to continue? (y)es?   ");
@@ -248,7 +351,6 @@ namespace VeloLibrary
                     break;
             }
         }
-
 
         void ErrorCall(Action f, string message = null)
         {
@@ -281,34 +383,37 @@ namespace VeloLibrary
             Console.ForegroundColor = ConsoleColor.Black;
             Console.WriteLine("\n  Book List:                              ");
             Console.ResetColor();
-            foreach (var book in books)
+            foreach (var book in BOOKS)
             {
-                Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  StockAmount: {book.StockAmount}  |  LentAmount: {book.LentAmount}");
+                Console.WriteLine($"{book.BookNo} - {book.Title} | Author: {book.Author} | ISBN: {book.ISBN} | Stock: {book.StockAmount} | Lent: {book.LentAmount} | Total: {book.TotalAmount}");
             }
+
         }
 
         void ShowLentBookList()
         {
-            if (lents.Count > 0)
+            if (LENT_BOOKS.Count > 0)
             {
                 Console.BackgroundColor = ConsoleColor.Yellow;
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.WriteLine("\n  Lent Books List:                        ");
+                Console.WriteLine("BT:Borrow Time, RT:Retun Time               ");
                 Console.ResetColor();
 
-                foreach (var lent in lents)
+                foreach (var lent in LENT_BOOKS)
                 {
-                    Book book = lent.book;
-                    Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {lent.BorrowTime.ToShortDateString()}  |  Return Date: {lent.ReturnTime.ToShortDateString()}");
+                    Console.WriteLine($"{lent.book.BookNo} - LentId {lent.UniqLentId} - {lent.book.Title} | {lent.book.Author} | {lent.book.ISBN} | BT: {lent.BorrowTime.ToShortDateString()} | RT: {lent.ReturnTime.ToShortDateString()}");
                 }
-                Console.BackgroundColor = ConsoleColor.Yellow;
-                Console.ForegroundColor = ConsoleColor.Black;
-                Console.WriteLine("Do you want list overdue books. (y)es?");
-                Console.ResetColor();
+                Console.WriteLine(" o - Do you want list (o)verdue books?   ");
+                Console.WriteLine(" Or enter any key to continue...         ");
                 string line = Console.ReadLine();
-                if (IsYes(line))
+                switch (line)
                 {
-                    ShowOverdueBooks();
+                    case "o":
+                        ShowOverdueBooks();
+                        break;
+                    default:
+                        break;
                 }
             }
             else
@@ -317,26 +422,36 @@ namespace VeloLibrary
             }
         }
 
-        private void ShowOverdueBooks()
+        void ShowOverdueBooks()
         {
-            Console.WriteLine("Book return period is 14 days");
-            if (lents.Count > 0)
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine(" OVERDUE BOOKS ");
+
+            Console.WriteLine($"TODAY: {DateTime.Today.ToShortDateString()} ");
+            Console.WriteLine("Book return period is 14 days.");
+
+            Console.ResetColor();
+
+            if (LENT_BOOKS.Count > 0)
             {
                 List<LentData> expiredBooks = new List<LentData>();
-                for (int i = 0; i < lents.Count; i++)
+                for (int i = 0; i < LENT_BOOKS.Count; i++)
                 {
-                    if (DateTime.Today.Subtract(lents[i].BorrowTime).Days > 14)
+                    if (DateTime.Today.Subtract(LENT_BOOKS[i].BorrowTime).Days > 14)
                     {
-                        expiredBooks.Add(lents[i]);
+                        expiredBooks.Add(LENT_BOOKS[i]);
                     }
                 }
                 if (expiredBooks.Count > 0)
                 {
                     foreach (var item in expiredBooks)
                     {
-                        Book book = item.book;
-                        Console.WriteLine($"  {book.BookNo} - {book.Title}  |  Author: {book.Author}  |  ISBN: {book.ISBN}  |  Borrow Date: {item.BorrowTime.ToShortDateString()}  |  Return Date: {item.ReturnTime.ToShortDateString()} | Overdue Time: {DateTime.Today.Subtract(item.BorrowTime).Days}");
+                        Console.WriteLine($"{item.book.BookNo} - LentId {item.UniqLentId} - {item.book.Title} | {item.book.Author} | {item.book.ISBN} | BT: {item.BorrowTime.ToShortDateString()} | RT: {item.ReturnTime.ToShortDateString()} | OT: {DateTime.Today.Subtract(item.BorrowTime).Days - 14}");
                     }
+                    Console.WriteLine("BT:Borrow Time, RT:Retun Time, OT: Overdue Days");
+                    Console.WriteLine("Enter 'd' for (d)elete an overdue book ");
+                    if (Console.ReadLine() == "d") DeleteOverDueBook();
                 }
                 else
                 {
@@ -348,6 +463,57 @@ namespace VeloLibrary
             {
                 Console.WriteLine("There are no lent books");
             }
+        }
+
+        void DeleteOverDueBook()
+        {
+            Console.WriteLine("Enter 'Lent Id' for delete for an overdue book.  ");
+            Console.WriteLine("Enter 'o' for show list (o)verdue books.         ");
+            string addLine = Console.ReadLine();
+            try
+            {
+                int lentId = Convert.ToInt32(addLine);
+                if (GetLentedBookWithLentId(lentId, out Book book, out int index))
+                {
+                    book.LentAmount--;
+                    LENT_BOOKS.RemoveAt(index);
+                    Console.WriteLine($"{book.Title} an overdue book deleted from library.");
+                    RefreshLentsJson();
+                    RefreshBooksJson();
+                    if (book.TotalAmount <= 0)
+                    {
+                        Console.WriteLine("Wanna delete book in the library list? (y)es?");
+                        string line = Console.ReadLine();
+                        if (IsYes(line))
+                        {
+                            Console.WriteLine(BOOKS[book.BookNo].Title + " removed from library list.");
+                            BOOKS.RemoveAt(book.BookNo);
+                            RefreshBooksJson();
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Wrong LentId");
+                }
+
+            }
+            catch
+            {
+                switch (addLine)
+                {
+                    case "o":
+                    case "O":
+                        ShowOverdueBooks();
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid entry");
+                        break;
+                }
+            }
+
+
         }
 
         void AddBook()
@@ -378,44 +544,6 @@ namespace VeloLibrary
                 {
                     ErrorCall(AddBook);
                 }
-            }
-        }
-
-        bool InvalidStringEntry(string line)
-        {
-            switch (line)
-            {
-                // simdilik on adet space kadar invalidString sayılıcak
-                // sonradan diğer istenmeyen stringler de eklenebilir.
-                case "":
-                case " ":
-                case "  ":
-                case "   ":
-                case "    ":
-                case "     ":
-                case "      ":
-                case "       ":
-                case "        ":
-                case "         ":
-                case "          ":
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        bool IsYes(string line)
-        {
-            switch (line)
-            {
-                case "y":
-                case "yes":
-                case "Y":
-                case "Yes":
-                case "YES":
-                    return true;
-                default:
-                    return false;
             }
         }
 
@@ -453,14 +581,14 @@ namespace VeloLibrary
 
         bool AddExistingBook(int id)
         {
-            if (id >= 0 && id < books.Count)
+            if (id >= 0 && id < BOOKS.Count)
             {
                 Console.WriteLine("How many books want you add?");
                 string line = Console.ReadLine();
                 try
                 {
                     int stokSize = Convert.ToInt32(line);
-                    AddBookToLibrary(books[id], stokSize);
+                    AddBookToLibrary(BOOKS[id], stokSize);
                     return true;
                 }
                 catch
@@ -476,18 +604,19 @@ namespace VeloLibrary
 
         void AddBookToLibrary(Book book, int? stockSize = null)
         {
-            if (books.Contains(book))
+            if (BOOKS.Contains(book))
             {
                 book.StockAmount += stockSize ?? 1;
             }
             else
             {
                 book.StockAmount = stockSize ?? 1;
-                books.Add(book);
+                BOOKS.Add(book);
             }
             Console.BackgroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("\n" + (stockSize ?? 1) + " books titled '" + book.Title + "' has been added.");
+            Console.WriteLine("\n" + (stockSize ?? 1) + " books '" + book.Title + "' has been added. ");
+            Console.WriteLine("There are '" + book.StockAmount + "' books in the library now.  ");
             Console.ResetColor();
             RefreshBooksJson();
         }
@@ -504,13 +633,13 @@ namespace VeloLibrary
             try
             {
                 int id = Convert.ToInt32(addLine);
-                if (id >= 0 && id < books.Count)
+                if (id >= 0 && id < BOOKS.Count)
                 {
                     Console.WriteLine("How many books want to remove?");
                     try
                     {
                         int amount = Convert.ToInt32(Console.ReadLine());
-                        RemoveBookFromLibrary(books[id], amount);
+                        RemoveBookFromLibrary(BOOKS[id], amount);
                     }
                     catch
                     {
@@ -533,7 +662,7 @@ namespace VeloLibrary
                     try
                     {
                         int amount = Convert.ToInt32(Console.ReadLine());
-                        RemoveBookFromLibrary(books[_book.BookNo], amount);
+                        RemoveBookFromLibrary(BOOKS[_book.BookNo], amount);
                     }
                     catch
                     {
@@ -549,11 +678,20 @@ namespace VeloLibrary
 
         void RemoveBookFromLibrary(Book book, int? amount = null)
         {
-            if (books.Contains(book))
+            if (BOOKS.Contains(book))
             {
-                book.StockAmount -= amount ?? 1;
+                if (book.StockAmount <= 0)
+                {
+                    Console.WriteLine("'" + book.Title + "' library does not have this book in stock.");
+                }
+                else
+                {
+                    book.StockAmount -= amount ?? 1;
+                    Console.WriteLine((amount ?? 1) + " books '" + book.Title + "' has been removed.");
+                    Console.WriteLine("There are '" + book.StockAmount + "' books in the library now.");
+                }
                 if (book.StockAmount < 0) book.StockAmount = 0;
-                Console.WriteLine((amount ?? 1) + " books '" + book.Title + "' has been removed.");
+
             }
             RefreshBooksJson();
         }
@@ -569,16 +707,16 @@ namespace VeloLibrary
             try
             {
                 int id = Convert.ToInt32(addLine);
-                if (id >= 0 && id < books.Count)
+                if (id >= 0 && id < BOOKS.Count)
                 {
-                    if (books[id].LentAmount > 0)
+                    if (BOOKS[id].LentAmount > 0)
                     {
-                        ErrorCall(DeleteBook, "You can not delete lent books.\nPlease wait for return of the book.");
+                        ErrorCall(DeleteBook, "You can not delete lent books.\nPlease wait for return all books.");
                     }
                     else
                     {
-                        Console.WriteLine(books[id].Title + " removed from library list.");
-                        books.RemoveAt(id);
+                        Console.WriteLine(BOOKS[id].Title + " removed from library list.");
+                        BOOKS.RemoveAt(id);
                         RefreshBooksJson();
                     }
                 }
@@ -595,7 +733,7 @@ namespace VeloLibrary
                 if (_book != null)
                 {
                     Console.WriteLine(_book.Title + " removed from library list.");
-                    books.RemoveAt(_book.BookNo);
+                    BOOKS.RemoveAt(_book.BookNo);
                     RefreshBooksJson();
                 }
                 else
@@ -620,9 +758,9 @@ namespace VeloLibrary
             try
             {
                 int id = Convert.ToInt32(addLine);
-                if (id >= 0 && id < books.Count)
+                if (id >= 0 && id < BOOKS.Count)
                 {
-                    seletedBook = books[id];
+                    seletedBook = BOOKS[id];
                 }
                 else
                 {
@@ -637,7 +775,7 @@ namespace VeloLibrary
 
                 if (_book != null)
                 {
-                    seletedBook = books[_book.BookNo];
+                    seletedBook = BOOKS[_book.BookNo];
                 }
                 else
                 {
@@ -652,17 +790,12 @@ namespace VeloLibrary
                 Console.ForegroundColor = ConsoleColor.Black;
                 Console.WriteLine(seletedBook.Title + " selected.\nWhat do you want to do? ");
                 Console.ResetColor();
-                Console.WriteLine("(b)orrow, re(t)urn, (a)dd, (r)emove, (d)elete book?");
+                Console.WriteLine("(b)orrow, (a)dd, (r)emove, (d)elete book?");
                 string line = Console.ReadLine();
                 switch (line)
                 {
                     case "b":
                         if (!BorrowABookWithId(seletedBook.BookNo))
-                            ErrorCall(FindBook);
-                        break;
-
-                    case "t":
-                        if (!ReturnABookWithId(seletedBook.BookNo))
                             ErrorCall(FindBook);
                         break;
 
@@ -693,24 +826,25 @@ namespace VeloLibrary
                         break;
 
                     case "d":
-                        Console.WriteLine("Are you sure to delete this book? (y)es?");
-                        string d_line = Console.ReadLine();
-                        if (IsYes(d_line))
+
+                        if (seletedBook.LentAmount > 0)
                         {
-                            if (seletedBook.LentAmount > 0)
-                            {
-                                ErrorCall(FindBook, (seletedBook.Title + " book was lent. Please wait for return the book."));
-                            }
-                            else
-                            {
-                                Console.WriteLine(seletedBook.Title + " removed from library list.");
-                                books.RemoveAt(seletedBook.BookNo);
-                                RefreshBooksJson();
-                            }
+                            ErrorCall(FindBook, (seletedBook.Title + " book was lent.\nYou can not delete lent books.\nPlease wait for return all books"));
                         }
                         else
                         {
-                            ErrorCall(FindBook);
+                            Console.WriteLine("Are you sure to delete this book? (y)es?");
+                            string d_line = Console.ReadLine();
+                            if (IsYes(d_line))
+                            {
+                                Console.WriteLine(seletedBook.Title + " removed from library list.");
+                                BOOKS.RemoveAt(seletedBook.BookNo);
+                                RefreshBooksJson();
+                            }
+                            else
+                            {
+                                ErrorCall(FindBook);
+                            }
                         }
                         break;
 
@@ -734,7 +868,7 @@ namespace VeloLibrary
             try
             {
                 int id = Convert.ToInt32(addLine);
-                if (id >= 0 && id < books.Count)
+                if (id >= 0 && id < BOOKS.Count)
                 {
                     if (!BorrowABookWithId(id))
                         ErrorCall(BarrowBook);
@@ -763,75 +897,79 @@ namespace VeloLibrary
 
         bool BorrowABookWithId(int id)
         {
-            if (books[id].StockAmount > 0)
+            if (BOOKS[id].StockAmount > 0)
             {
-                books[id].LentAmount++;
-                Console.WriteLine(books[id].Title + "   borrowed from library.");
-                RemoveBookFromLibrary(books[id]);
-                LentBookAdd(books[id], DateTime.Today);
+                BOOKS[id].LentAmount++;
+                Console.WriteLine(BOOKS[id].Title + "   borrowed from library.");
+                RemoveBookFromLibrary(BOOKS[id]);
+                LentBookAdd(BOOKS[id], DateTime.Today);
                 return true;
             }
             else
             {
-                Console.WriteLine(books[id].Title + " - book is out of library stocks");
+                Console.WriteLine(BOOKS[id].Title + " - book is out of library stocks");
                 return false;
             }
         }
 
         void ReturnBook()
         {
-            ShowBookList();
             Console.BackgroundColor = ConsoleColor.Gray;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine("Enter 'Book No' or 'Book Title' to return a book.");
+            Console.WriteLine("Enter (l) - Show (l)ent books list or...    ");
+            Console.WriteLine("Enter ' Unique Lent ID' to return your book.");
             Console.ResetColor();
             string addLine = Console.ReadLine();
 
             try
             {
                 int id = Convert.ToInt32(addLine);
-                if (id >= 0 && id < books.Count)
+                if (GetLentedBookWithLentId(id, out Book book, out int lentIndex))
                 {
-                    if (!ReturnABookWithId(id))
+                    if (ReturnABookWithId(book.BookNo))
+                    {
+                        LENT_BOOKS.RemoveAt(lentIndex);
+                        RefreshLentsJson();
+                    }
+                    else
+                    {
                         ErrorCall(ReturnBook);
+                    }
                 }
                 else
                 {
-                    ErrorCall(ReturnBook);
+                    ErrorCall(ReturnBook, "You entered invalid LentId");
                 }
 
             }
             catch
             {
-                Book _book = GetBook(addLine);
-
-                if (_book != null)
+                if (addLine == "l")
                 {
-                    if (!ReturnABookWithId(_book.BookNo))
-                        ErrorCall(ReturnBook);
+                    ShowLentBookList();
+                    ReturnBook();
                 }
                 else
                 {
-                    ErrorCall(BarrowBook, "Wrong book title!");
+                    ErrorCall(ReturnBook);
                 }
             }
         }
 
         bool ReturnABookWithId(int id)
         {
-            if (books[id].LentAmount > 0)
+            if (BOOKS[id].LentAmount > 0)
             {
-                books[id].LentAmount--;
-                Console.WriteLine(books[id].Title + " - book was returned");
-                AddBookToLibrary(books[id]);
+                BOOKS[id].LentAmount--;
+                Console.WriteLine(BOOKS[id].Title + " - book was returned");
+                AddBookToLibrary(BOOKS[id]);
                 return true;
             }
             else
             {
-                Console.WriteLine(books[id].Title + " - there is no lent book");
+                Console.WriteLine(BOOKS[id].Title + " - there is no lent book");
                 return false;
             }
         }
-
     }
 }

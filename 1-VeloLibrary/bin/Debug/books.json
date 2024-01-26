@@ -1,29 +1,92 @@
 [
   {
     "BookNo": 0,
-    "Title": "Dummy_Book",
-    "Author": "Dummy_Author",
-    "ISBN": "000-0000000000",
-    "StockAmount": 8,
-    "LentAmount": 2,
-    "TotalAmount": 10
+    "Title": "Whispering Shadows",
+    "Author": "Isabella Rainhart",
+    "ISBN": "ISBN1234567890",
+    "StockAmount": 15,
+    "LentAmount": 5,
+    "TotalAmount": 20
   },
   {
     "BookNo": 1,
-    "Title": "Dummy_Book1",
-    "Author": "Dummy_Author1",
-    "ISBN": "000-0000000001",
-    "StockAmount": 0,
-    "LentAmount": 1,
-    "TotalAmount": 1
+    "Title": "Enigma of Echoes",
+    "Author": "Isabella Rainhart",
+    "ISBN": "ISBN2345678901",
+    "StockAmount": 16,
+    "LentAmount": 6,
+    "TotalAmount": 22
   },
   {
     "BookNo": 2,
+    "Title": "Midnight Serenade",
+    "Author": "Isabella Rainhart",
+    "ISBN": "ISBN3456789012",
+    "StockAmount": 5,
+    "LentAmount": 0,
+    "TotalAmount": 5
+  },
+  {
+    "BookNo": 3,
+    "Title": "Forgotten Dreamscape",
+    "Author": "Atticus Sterling",
+    "ISBN": "ISBN4567890123",
+    "StockAmount": 14,
+    "LentAmount": 3,
+    "TotalAmount": 17
+  },
+  {
+    "BookNo": 4,
+    "Title": "Siren's Lullaby",
+    "Author": "Evangeline Frost",
+    "ISBN": "ISBN5678901234",
+    "StockAmount": 15,
+    "LentAmount": 5,
+    "TotalAmount": 20
+  },
+  {
+    "BookNo": 5,
+    "Title": "Quantum Chronicles",
+    "Author": "Thaddeus Blackwood",
+    "ISBN": "ISBN6789012345",
+    "StockAmount": 8,
+    "LentAmount": 1,
+    "TotalAmount": 9
+  },
+  {
+    "BookNo": 6,
+    "Title": "Celestial Cipher",
+    "Author": "Imogen Ravenhurst",
+    "ISBN": "ISBN7890123456",
+    "StockAmount": 19,
+    "LentAmount": 8,
+    "TotalAmount": 27
+  },
+  {
+    "BookNo": 7,
+    "Title": "Velvet Embrace",
+    "Author": "Imogen Ravenhurst",
+    "ISBN": "ISBN8901234567",
+    "StockAmount": 9,
+    "LentAmount": 1,
+    "TotalAmount": 10
+  },
+  {
+    "BookNo": 8,
     "Title": "Yeni bir kitap",
     "Author": "Hasan Yılmaz",
-    "ISBN": "123-09876443231",
-    "StockAmount": 3,
-    "LentAmount": 1,
-    "TotalAmount": 4
+    "ISBN": "ISBN9012345678",
+    "StockAmount": 6,
+    "LentAmount": 0,
+    "TotalAmount": 6
+  },
+  {
+    "BookNo": 9,
+    "Title": "Elle eklenen kitap",
+    "Author": "Hasan Yılmaz",
+    "ISBN": "ISBN0123456789",
+    "StockAmount": 2,
+    "LentAmount": 0,
+    "TotalAmount": 2
   }
 ]
